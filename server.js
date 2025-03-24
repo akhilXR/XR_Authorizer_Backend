@@ -37,9 +37,9 @@ app.get('/check-access', async (req, res) => {
     try {
         const device = await db.collection('devices').findOne({ deviceId });
         if (device) {
-            res.json({ authorized: true });
+            res.json({ authorized: device.state === 'authorized', state: device.state });
         } else {
-            res.json({ authorized: false });
+            res.json({ authorized: false, state: 'not_found' });
         }
     } catch (err) {
         console.error('Error checking access:', err);
@@ -47,22 +47,28 @@ app.get('/check-access', async (req, res) => {
     }
 });
 
+
 // Endpoint to authorize a device (to be called from your dashboard)
 app.post('/authorize-device', async (req, res) => {
-    const deviceId = req.body.deviceId;
+    const { deviceId, state = 'authorized' } = req.body; // Default state to "authorized"
 
     if (!deviceId) {
         return res.status(400).json({ error: 'Device ID is required' });
     }
 
     try {
-        await db.collection('devices').insertOne({ deviceId });
+        await db.collection('devices').updateOne(
+            { deviceId },
+            { $set: { state, authorizedAt: new Date() } }, // Add state and timestamp
+            { upsert: true } // Create if not exists
+        );
         res.json({ message: 'Device authorized successfully' });
     } catch (err) {
         console.error('Error authorizing device:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 // Endpoint to revoke access for a device (to be called from your dashboard)
 app.post('/revoke-access', async (req, res) => {
@@ -73,13 +79,17 @@ app.post('/revoke-access', async (req, res) => {
     }
 
     try {
-        await db.collection('devices').deleteOne({ deviceId });
+        await db.collection('devices').updateOne(
+            { deviceId },
+            { $set: { state: 'revoked', revokedAt: new Date() } }
+        );
         res.json({ message: 'Device access revoked successfully' });
     } catch (err) {
         console.error('Error revoking access:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 // Start the server
 app.listen(PORT, () => {
