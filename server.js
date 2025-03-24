@@ -6,7 +6,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // MongoDB connection string (replace with your Atlas connection string)
-const uri = "mongodb+srv://akhilm:<db_password>@cluster0.xuxyj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const uri = "mongodb+srv://akhilm:PBCggEgup3hyxImC@cluster0.xuxyj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 // Middleware to parse JSON and allow CORS
