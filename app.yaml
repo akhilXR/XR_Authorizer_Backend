@@ -1,0 +1,6 @@
+runtime: nodejs18  # Replace with your runtime (e.g., python, java, etc.)
+env: standard
+
+handlers:
+  - url: /.*
+    script: auto
